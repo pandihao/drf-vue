@@ -64,12 +64,13 @@
                 password : this.param.password
             };
 
-            this.$store.dispatch('user/login', useraccount).then(() => {
-                this.$router.push({ path:  '/'})
+            this.$store.dispatch('user/login', useraccount)
+                .then(() => {
+                    this.$router.push({ path:  '/'})
 
-            }).catch(() => {
+                }).catch(() => {
                 // console.log(error.response.data);
-            })
+                })
 
             // this.axios.post(`${this.$store.state.baseApi}/api/oauth/login/`,useraccount)
             //     .then(response => {

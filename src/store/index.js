@@ -3,9 +3,6 @@ import {createStore} from 'vuex'
 import getters from './getters'
 // import Vue from 'vue'
 
-
-
-
 const modulesFiles = require.context('./modules', true, /\.js$/)
 const modules = modulesFiles.keys().reduce((modules, modulePath) => {
     // set './app.js' => 'app'

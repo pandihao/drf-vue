@@ -1,11 +1,14 @@
 import {createRouter, createWebHistory} from "vue-router";
+import store from '../store'
 import {getToekn,getUserName} from "../utils/auth";
 import Home from "../views/Home.vue";
+
 const routes = [
     {
         path: '/',
         redirect: '/dashboard'
-    }, {
+    },
+    {
         path: "/",
         name: "Home",
         component: Home,
@@ -132,11 +135,37 @@ const routes = [
     }
 ];
 
+// export const asyncRoutes = [
+//     // 系统管理
+//     {
+//         path: '/ldap',
+//         name: 'ldap',
+//         meta: {
+//             title: 'ldap',
+//             icon: 'ldap'
+//         },
+//         children: [
+//             {
+//                 path: 'ldapapi',
+//                 component: () => import('@/views/LdapApi'),
+//                 name: 'ldap-users',
+//                 meta: { title: 'ldap管理', icon: 'ldap', noCache: true }
+//             },
+//         ]
+//     }
+// ]
+
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
     routes
 });
 
+
+const about = {    //接口返回路由信息
+    path: '/about',
+    name: 'About',
+    component: () => import('../views/LdapApi.vue')
+}
 
 router.beforeEach((to, from, next) => {
     const token = getToekn()
@@ -147,13 +176,15 @@ router.beforeEach((to, from, next) => {
     // console.log(this.$router.path);
     if (!token && to.path !== '/login') {
         next('/login');
-    } else if (to.meta.permission) {
-        // console.log(to.meta.permission);
-        // 如果是管理员权限则可进入，这里只是简单的模拟管理员权限而已
-        username === 'admin'
-            ? next()
-            : next('/403');
     } else {
+        if(username){
+            store.dispatch('user/getInfo')
+                .then(res =>{
+                    router.addRoute(about)
+                    console.log(` res data `);
+                    console.log(res);
+                })
+        }
         next();
     }
 });

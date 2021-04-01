@@ -64,7 +64,7 @@ const actions = {
     getInfo({ commit }) {
         return new Promise((resolve, reject) => {
             getInfo().then(response => {
-                console.log(response);
+                console.log('entry store user getinfo');
                 const data = response
                 if (!data) {
                     reject('验证失败，请重新登录')

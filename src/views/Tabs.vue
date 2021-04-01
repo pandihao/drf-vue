@@ -23,6 +23,7 @@
                     </el-table>
                     <div class="handle-row">
                         <el-button type="primary">全部标为已读</el-button>
+                        <el-button type="primary" @click="toldap">测试跳转</el-button>
                     </div>
                 </el-tab-pane>
                 <el-tab-pane :label="`已读消息(${read.length})`" name="second">
@@ -107,6 +108,9 @@
             handleRestore(index) {
                 const item = this.recycle.splice(index, 1);
                 this.read = item.concat(this.read);
+            },
+            toldap(){
+                this.$router.push('/ldap')
             }
         },
         computed: {

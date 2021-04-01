@@ -112,7 +112,7 @@
 <script>
 import { fetchData } from "../api/index";
 export default {
-    name: "Ldapapi",
+    name: "LdapApi",
     data() {
         return {
             query: {

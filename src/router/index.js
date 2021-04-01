@@ -1,9 +1,9 @@
 import {createRouter, createWebHistory} from "vue-router";
 import store from '../store'
-import {getToekn,getUserName} from "../utils/auth";
+import {getToekn} from "../utils/auth";
 import Home from "../views/Home.vue";
 
-const routes = [
+export  const routes = [
     {
         path: '/',
         redirect: '/dashboard'
@@ -49,25 +49,8 @@ const routes = [
                 component: () => import (
                 /* webpackChunkName: "form" */
                 "../views/BaseForm.vue")
-            }, {
-                path: "/tabs",
-                name: "tabs",
-                meta: {
-                    title: 'tab标签'
-                },
-                component: () => import (
-                /* webpackChunkName: "tabs" */
-                "../views/Tabs.vue")
-            }, {
-                path: "/donate",
-                name: "donate",
-                meta: {
-                    title: '鼓励作者'
-                },
-                component: () => import (
-                /* webpackChunkName: "donate" */
-                "../views/Donate.vue")
-            }, {
+            },
+            {
                 path: "/permission",
                 name: "permission",
                 meta: {
@@ -135,25 +118,6 @@ const routes = [
     }
 ];
 
-// export const asyncRoutes = [
-//     // 系统管理
-//     {
-//         path: '/ldap',
-//         name: 'ldap',
-//         meta: {
-//             title: 'ldap',
-//             icon: 'ldap'
-//         },
-//         children: [
-//             {
-//                 path: 'ldapapi',
-//                 component: () => import('@/views/LdapApi'),
-//                 name: 'ldap-users',
-//                 meta: { title: 'ldap管理', icon: 'ldap', noCache: true }
-//             },
-//         ]
-//     }
-// ]
 
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
@@ -161,31 +125,67 @@ const router = createRouter({
 });
 
 
-const about = {    //接口返回路由信息
-    path: '/about',
-    name: 'About',
-    component: () => import('../views/LdapApi.vue')
-}
-
+export  const asyncRoutes = [
+    {
+        path: '/ldap',
+        name: 'Ldapapi',
+        component: () => import('../views/LdapApi.vue'),
+        meta: {
+            title: 'ldap'
+        },
+    }
+]
+// router.addRoute(about)
+console.log(router.getRoutes())
 router.beforeEach((to, from, next) => {
     const token = getToekn()
-    const username = getUserName()
+    // const username = getUserName()
 
     // document.title = `${to.meta.title} | vue-manage-system`;
 
     // console.log(this.$router.path);
-    if (!token && to.path !== '/login') {
-        next('/login');
-    } else {
-        if(username){
-            store.dispatch('user/getInfo')
-                .then(res =>{
-                    router.addRoute(about)
-                    console.log(` res data `);
-                    console.log(res);
-                })
+    if (token){
+        if (to.path === '/login') {
+            // 如果已登录，请重定向到主页
+            next({ path: '/' })
+        }else {
+            console.log(store.getters.userId);
+            const hasUserIds = store.getters.userId && store.getters.userId > 0
+            if(hasUserIds){
+                console.log('hasUserIds');
+                console.log(router.currentRoute.value.fullPath)
+                next();
+            }else {
+                store.dispatch('user/getInfo')
+                    .then(res =>{
+                        router_arr.forEach(
+                            function (route){
+                                const tmp ={...route}
+                                console.log(tmp)
+                                router.addRoute(route)
+                            }
+                        )
+                        next({ ...to ,replace:true})
+                        console.log(res)
+                        console.log(router.getRoutes())
+                    })
+                    }
+                    //     router.addRoute(about)
+                    //     next({ ...to ,replace:true})
+                    //     console.log(` res path `);
+                    //     console.log(router.currentRoute.value.fullPath);
+                    //     console.log(res);
+                    //     console.log(router.getRoutes())
+                    // })
+            }
+    }else {
+        if ( to.path !== '/login') {
+            console.log(' entry login')
+            next('/login');
+        }else {
+            console.log(router.getRoutes())
+            next()
         }
-        next();
     }
 });
 

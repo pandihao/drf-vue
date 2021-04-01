@@ -3,7 +3,7 @@ import store from '../store'
 import {getToekn} from "../utils/auth";
 import Home from "../views/Home.vue";
 
-export  const routes = [
+export  const constantRoutes = [
     {
         path: '/',
         redirect: '/dashboard'
@@ -121,23 +121,23 @@ export  const routes = [
 
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
-    routes
+    routes: constantRoutes
 });
 
 
-export  const asyncRoutes = [
+export const asyncRoutes = [
     {
         path: '/ldap',
-        name: 'Ldapapi',
+        name: 'ladpapi',
         component: () => import('../views/LdapApi.vue'),
         meta: {
-            title: 'ldap'
-        },
+            permissions: ['admin', 'ldap-user'],
+            title: '系统管理',
+            icon: 'system'
+        }
     }
 ]
-// router.addRoute(about)
-console.log(router.getRoutes())
-router.beforeEach((to, from, next) => {
+router.beforeEach(async(to, from, next) => {
     const token = getToekn()
     // const username = getUserName()
 
@@ -149,35 +149,36 @@ router.beforeEach((to, from, next) => {
             // 如果已登录，请重定向到主页
             next({ path: '/' })
         }else {
-            console.log(store.getters.userId);
+            // console.log(store.getters.userId);
             const hasUserIds = store.getters.userId && store.getters.userId > 0
             if(hasUserIds){
                 console.log('hasUserIds');
                 console.log(router.currentRoute.value.fullPath)
                 next();
             }else {
-                store.dispatch('user/getInfo')
-                    .then(res =>{
-                        router_arr.forEach(
-                            function (route){
-                                const tmp ={...route}
-                                console.log(tmp)
-                                router.addRoute(route)
-                            }
-                        )
-                        next({ ...to ,replace:true})
-                        console.log(res)
-                        console.log(router.getRoutes())
-                    })
-                    }
-                    //     router.addRoute(about)
-                    //     next({ ...to ,replace:true})
-                    //     console.log(` res path `);
-                    //     console.log(router.currentRoute.value.fullPath);
-                    //     console.log(res);
-                    //     console.log(router.getRoutes())
-                    // })
+                const accessRoutes = await store.dispatch('permission/generateRoutes')
+                console.log('accessRoutes');
+                console.log(accessRoutes);
+                accessRoutes.forEach(route => {
+                    router.addRoute(route)
+                })
+                next({ ...to ,replace:true})
+                // store.dispatch('user/getInfo')
+                //     .then(res =>{
+                //         router_arr.forEach(
+                //             function (route){
+                //                 const tmp ={...route}
+                //                 console.log(tmp)
+                //                 router.addRoute(route)
+                //             }
+                //         )
+                //         next({ ...to ,replace:true})
+                //         // next()
+                //         console.log(res)
+                //         console.log(router.getRoutes())
+                //     })
             }
+        }
     }else {
         if ( to.path !== '/login') {
             console.log(' entry login')

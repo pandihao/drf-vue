@@ -1,5 +1,4 @@
-// import { asyncRoutes, constantRoutes } from '@/router'
-import { asyncRoutes, constantRoutes } from "../../router";
+import { asyncRoutes, constantRoutes, } from "../../router";
 import store from  "../../store"
 /**
  * Use meta.role to determine if the current user has permission
@@ -24,6 +23,8 @@ export function filterAsyncRoutes(routes, permissions) {
 
     routes.forEach(route => {
         const tmp = { ...route }
+        console.log('filterAsyncRoutes')
+        console.log(tmp)
         if (hasPermission(permissions, tmp)) {
             if (tmp.children) {
                 tmp.children = filterAsyncRoutes(tmp.children, permissions)
@@ -50,7 +51,8 @@ const mutations = {
 const actions = {
     generateRoutes({ commit }) {
         return new Promise(resolve => {
-            console.log('generate' +asyncRoutes);
+            console.log('generate');
+            console.log(asyncRoutes);
             store.dispatch('user/getInfo').then(res => {
                     const accessedRoutes = filterAsyncRoutes(asyncRoutes, res.permissions)
                     commit('SET_ROUTES', accessedRoutes)

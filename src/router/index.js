@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from "vue-router";
 import store from '../store'
 import {getToekn} from "../utils/auth";
 import Home from "../views/Home.vue";
+import LdapApi from "../views/LdapApi";
 
 export  const constantRoutes = [
     {
@@ -22,71 +23,6 @@ export  const constantRoutes = [
                 component: () => import (
                 /* webpackChunkName: "dashboard" */
                 "../views/Dashboard.vue")
-            }, {
-                path: "/table",
-                name: "basetable",
-                meta: {
-                    title: '表格'
-                },
-                component: () => import (
-                /* webpackChunkName: "table" */
-                "../views/BaseTable.vue")
-            }, {
-                path: "/charts",
-                name: "basecharts",
-                meta: {
-                    title: '图表'
-                },
-                component: () => import (
-                /* webpackChunkName: "charts" */
-                "../views/BaseCharts.vue")
-            }, {
-                path: "/form",
-                name: "baseform",
-                meta: {
-                    title: '表单'
-                },
-                component: () => import (
-                /* webpackChunkName: "form" */
-                "../views/BaseForm.vue")
-            },
-            {
-                path: "/permission",
-                name: "permission",
-                meta: {
-                    title: '权限管理',
-                    permission: true
-                },
-                component: () => import (
-                /* webpackChunkName: "permission" */
-                "../views/Permission.vue")
-            }, {
-                path: "/i18n",
-                name: "i18n",
-                meta: {
-                    title: '国际化语言'
-                },
-                component: () => import (
-                /* webpackChunkName: "i18n" */
-                "../views/I18n.vue")
-            }, {
-                path: "/upload",
-                name: "upload",
-                meta: {
-                    title: '上传插件'
-                },
-                component: () => import (
-                /* webpackChunkName: "upload" */
-                "../views/Upload.vue")
-            }, {
-                path: "/icon",
-                name: "icon",
-                meta: {
-                    title: '自定义图标'
-                },
-                component: () => import (
-                /* webpackChunkName: "icon" */
-                "../views/Icon.vue")
             }, {
                 path: '/404',
                 name: '404',
@@ -125,18 +61,58 @@ const router = createRouter({
 });
 
 
-export const asyncRoutes = [
+export const asyncRoutes =[
     {
-        path: '/ldap',
-        name: 'ladpapi',
-        component: () => import('../views/LdapApi.vue'),
+        path: "/system",
+        name: "system",
+        component: Home,
         meta: {
-            permissions: ['admin', 'ldap-user'],
+            permissions: ['admin', 'system'],
             title: '系统管理',
             icon: 'system'
-        }
+        },
+        children: [
+            {
+                path: '/ldap',
+                name: 'ladpapi',
+                component: LdapApi,
+                meta: {
+                    permissions: ['admin', 'ldap-user'],
+                    title: '系统管理',
+                    icon: 'system'
+                }
+            }
+        ]
+    },
+    {
+        path: '/404',
+        name: '404',
+        meta: {
+            title: '找不到页面'
+        },
+        component: () => import (/* webpackChunkName: "404" */
+            '../views/404.vue')
     }
 ]
+// router.addRoute({
+//         path: "/system",
+//         name: "system",
+//         component: Home,
+//         meta: {
+//             permissions: ['admin', 'system'],
+//             title: '系统管理',
+//             icon: 'system'
+//         }})
+// router.addRoute('system',{
+//     path: '/ldap',
+//     name: 'ladpapi',
+//     component: () => import('../views/LdapApi.vue'),
+//     meta: {
+//         permissions: ['admin', 'ldap-user'],
+//         title: '系统管理',
+//         icon: 'system'
+//     }
+// })
 router.beforeEach(async(to, from, next) => {
     const token = getToekn()
     // const username = getUserName()
@@ -159,24 +135,22 @@ router.beforeEach(async(to, from, next) => {
                 const accessRoutes = await store.dispatch('permission/generateRoutes')
                 console.log('accessRoutes');
                 console.log(accessRoutes);
+                // router.addRoute(asyncRoutes)
+                console.log(router.getRoutes());
                 accessRoutes.forEach(route => {
-                    router.addRoute(route)
+                    if (route.children && route.children.length > 0){
+                        router.addRoute({name:route.name,path:route.path,component:route.component,meta:route.meta})
+                        route.children.forEach(childRoute =>{
+                            router.addRoute(route.name,childRoute)
+                        })
+                    }else {
+                        router.addRoute(route)
+                    }
                 })
+                // accessRoutes.forEach(route => {
+                //     router.addRoute(route)
+                // })
                 next({ ...to ,replace:true})
-                // store.dispatch('user/getInfo')
-                //     .then(res =>{
-                //         router_arr.forEach(
-                //             function (route){
-                //                 const tmp ={...route}
-                //                 console.log(tmp)
-                //                 router.addRoute(route)
-                //             }
-                //         )
-                //         next({ ...to ,replace:true})
-                //         // next()
-                //         console.log(res)
-                //         console.log(router.getRoutes())
-                //     })
             }
         }
     }else {
